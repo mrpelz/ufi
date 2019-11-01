@@ -1,0 +1,18 @@
+[Unit]
+Description=ufi
+
+[Service]
+Type=simple
+PIDFile=/run/ufi/ufi.pid
+WorkingDirectory=/opt/ufi/
+ExecStart=/usr/bin/node --use_strict src/index.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal+console
+SyslogLevel=debug
+SyslogIdentifier=ufi
+
+[Install]
+WantedBy=multi-user.target
+Alias=ufi.service

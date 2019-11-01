@@ -1,0 +1,18 @@
+{
+  "name": "ufi",
+  "version": "1.0.0",
+  "description": "UFI – Universelle, flexible Informationsanzeige – universal, flexible info display",
+  "main": "src/index.js",
+  "scripts": {
+    "deploy": "scripts/deploy.sh",
+    "push": "git push origin --force && git push github --force",
+    "start": "echo \"use systemd with 'ufi.service'-file to start this service in a production environment\nfor testing purposes, use 'npm run start:dev'\"",
+    "start:dev": "node --use_strict src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "usp.wurstsalat.cloud:git/ufi.git"
+  },
+  "author": "Lennart Pelz <mail@mrpelz.de>",
+  "license": "UNLICENSED"
+}
