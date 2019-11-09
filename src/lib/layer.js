@@ -20,7 +20,9 @@ class ClassList extends EventEmitter {
    */
   add(...items) {
     items.forEach((item) => {
-      this._classes.add(item);
+      item.split(' ').forEach((className) => {
+        this._classes.add(className);
+      });
     });
 
     this.emit(changeEvent);
@@ -47,7 +49,9 @@ class ClassList extends EventEmitter {
    */
   remove(...items) {
     items.forEach((item) => {
-      this._classes.delete(item);
+      item.split(' ').forEach((className) => {
+        this._classes.delete(className);
+      });
     });
 
     this.emit(changeEvent);
@@ -120,7 +124,7 @@ class Layer extends EventEmitter {
   /**
    * @param {Object} data
    */
-  setData(data) {
+  setState(data) {
     deepMerge(this.state, data);
     this.emit(changeEvent);
   }

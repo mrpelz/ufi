@@ -35,25 +35,25 @@ class DisplayServerDisplay {
     this._display.setChangeCallback(this._publishMessage);
   }
 
-  get _hierarchy() {
+  get _data() {
     const presentations = [...this._display.presentations];
 
-    const layers = /** @type {I_Layer[]} */ ([]).concat(
+    const layers = /** @type {I_Layer[]} */ [...new Set(([]).concat(
       ...presentations.map(({ layers: l }) => [...l])
-    );
+    ))];
 
-    const slides = /** @type {I_AnySlide[]} */ ([]).concat(
+    const slides = /** @type {I_AnySlide[]} */ [...new Set(([]).concat(
       ...layers.map(({ slide: s }) => s),
       ...presentations.map(
         (presentation) => /** @type {I_AnySlide[]} */ ([]).concat(
           ...presentation.slides
         )
       )
-    );
+    ))];
 
-    const assets = /** @type {I_Asset[]} */ ([]).concat(
+    const assets = /** @type {I_Asset[]} */ [...new Set(([]).concat(
       ...slides.map((slide) => [...slide.assets])
-    );
+    ))];
 
     return {
       assets: assets.map((asset) => ({
@@ -87,10 +87,15 @@ class DisplayServerDisplay {
   _publishMessage() {
     if (!this._connection) return false;
 
+    const data = this._data;
+
     let payload = '';
 
+    // eslint-disable-next-line no-console
+    console.log(JSON.stringify(data, null, 2));
+
     try {
-      payload = JSON.stringify(this._hierarchy, null, null);
+      payload = JSON.stringify(data, null, null);
     } catch (_) {
       return false;
     }
@@ -110,6 +115,8 @@ class DisplayServerDisplay {
   connect(writer) {
     if (this._connection) throw new Error('display already has a connected stream');
     this._connection = writer;
+
+    this._display.onChange();
   }
 
   destroy() {
@@ -129,15 +136,13 @@ class DisplayServer {
   /**
    * @param {{
    *  host?: string,
-   *  port?: number
+   *  port: (number|null)
    * }} options
    */
-  constructor(options = {}) {
-    const {
-      host = '127.0.0.1',
-      port = null
-    } = options;
-
+  constructor({
+    host = '127.0.0.1',
+    port = null
+  }) {
     if (!host || !port) {
       throw new Error('insufficient options provided');
     }
@@ -188,8 +193,9 @@ class DisplayServer {
     const name = url.searchParams.get('name');
 
     if (!name) {
-      response.writeHead(400, '400 – please provide display name as query-string item "name"');
-      response.end();
+      const message = 'please provide display name as query-string item "name"';
+      response.writeHead(400, message);
+      response.end(message);
 
       return;
     }
@@ -197,8 +203,9 @@ class DisplayServer {
     const display = this._getDisplayByName(name);
 
     if (!display) {
-      response.writeHead(404, '404 – display name not found');
-      response.end();
+      const message = 'display name not found';
+      response.writeHead(404, message);
+      response.end(`${message} [${name}]`);
 
       return;
     }
@@ -211,16 +218,15 @@ class DisplayServer {
       'Content-Type': 'text/event-stream; charset=utf-8'
     });
 
+    response.write(Buffer.from(`: welcome to the event stream\n: client "${name}"\n\n`));
+
     try {
       display.connect(response.write);
-    } catch (error) {
-      response.writeHead(503, '503 – display name already iin use');
-      response.end();
-
-      return;
+    } catch (_) {
+      const message = 'display name already iin use';
+      response.writeHead(503, message);
+      response.end(`${message} [${name}]`);
     }
-
-    response.write(Buffer.from(`: welcome to the event stream\n: client "${name}"\n\n`));
   }
 
   /**

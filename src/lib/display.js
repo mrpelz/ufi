@@ -21,14 +21,14 @@ class Display {
    */
   constructor(id) {
     this.id = id;
-
-    this._changeCallback = /** @type {ChangeCallback|null} */ (null);
     this.presentations = /** @type {Set<I_Presentation>} */ (new Set());
 
-    rebind(this, '_onChange');
+    this._changeCallback = /** @type {ChangeCallback|null} */ (null);
+
+    rebind(this, 'onChange');
   }
 
-  _onChange() {
+  onChange() {
     if (!(this._changeCallback instanceof Function)) return;
 
     this._changeCallback();
@@ -43,8 +43,6 @@ class Display {
    */
   setChangeCallback(callback) {
     this._changeCallback = callback;
-
-    this._onChange();
   }
 
   /**
@@ -52,17 +50,17 @@ class Display {
    */
   setPresentations(presentations) {
     [...this.presentations].forEach((presentation) => {
-      presentation.removeListener(changeEvent, this._onChange);
+      presentation.removeListener(changeEvent, this.onChange);
     });
 
     this.presentations.clear();
 
     presentations.forEach((presentation) => {
       this.presentations.add(presentation);
-      presentation.on(changeEvent, this._onChange);
+      presentation.on(changeEvent, this.onChange);
     });
 
-    this._onChange();
+    this.onChange();
   }
 }
 

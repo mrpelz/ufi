@@ -22,7 +22,6 @@ class Presentation extends EventEmitter {
     super();
 
     this.id = uuid();
-
     this.layers = /** @type {Set<I_Layer>} */ (new Set());
     this.slides = /** @type {Set<I_AnySlide>} */ (new Set());
 

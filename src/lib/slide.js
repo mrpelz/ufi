@@ -27,7 +27,6 @@ class Slide {
    */
   constructor(type, ...assets) {
     this.id = uuid();
-
     this.assets = new Set(assets);
     this.type = type;
   }

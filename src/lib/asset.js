@@ -21,7 +21,6 @@ class Asset {
     } = options;
 
     this.id = uuid();
-
     this.hash = hash;
     this.MIMEType = MIMEType;
     this.url = url instanceof URL ? url : new URL(url);
