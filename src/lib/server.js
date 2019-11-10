@@ -27,16 +27,16 @@ class DisplayServerDisplay {
    * @param {I_Display} display
    */
   constructor(display) {
-    this._display = display;
-    this._connection = /** @type {import('http').ServerResponse['write']|null} */ (null);
+    this.display = display;
+    this.connection = /** @type {import('http').ServerResponse['write']|null} */ (null);
 
     rebind(this, '_publishMessage');
 
-    this._display.setChangeCallback(this._publishMessage);
+    this.display.setChangeCallback(this._publishMessage);
   }
 
   get _data() {
-    const presentations = [...this._display.presentations];
+    const presentations = [...this.display.presentations];
 
     const layers = /** @type {I_Layer[]} */ [...new Set(([]).concat(
       ...presentations.map(({ layers: l }) => [...l])
@@ -78,14 +78,14 @@ class DisplayServerDisplay {
   }
 
   get id() {
-    return this._display.id;
+    return this.display.id;
   }
 
   /**
     * @returns {boolean}
     */
   _publishMessage() {
-    if (!this._connection) return false;
+    if (!this.connection) return false;
 
     const data = this._data;
 
@@ -101,7 +101,7 @@ class DisplayServerDisplay {
     }
 
     try {
-      this._connection(Buffer.from(`data: ${payload}\n\n`));
+      this.connection(Buffer.from(`data: ${payload}\n\n`));
     } catch (_) {
       return false;
     }
@@ -113,18 +113,19 @@ class DisplayServerDisplay {
    * @param {import('http').ServerResponse['write']} writer
    */
   connect(writer) {
-    if (this._connection) throw new Error('display already has a connected stream');
-    this._connection = writer;
+    if (this.connection) return;
+    this.connection = writer;
 
-    this._display.onChange();
+    this.display.onChange();
   }
 
   destroy() {
-    this._display.removeChangeCallback();
+    this.disconnect();
+    this.display.removeChangeCallback();
   }
 
   disconnect() {
-    this._connection = null;
+    this.connection = null;
   }
 }
 
@@ -210,6 +211,14 @@ class DisplayServer {
       return;
     }
 
+    if (display.connection) {
+      const message = 'display name already in use';
+      response.writeHead(503, message);
+      response.end(`${message} [${name}]`);
+
+      return;
+    }
+
     response.once('close', () => {
       display.disconnect();
     });
@@ -219,14 +228,7 @@ class DisplayServer {
     });
 
     response.write(Buffer.from(`: welcome to the event stream\n: client "${name}"\n\n`));
-
-    try {
-      display.connect(response.write);
-    } catch (_) {
-      const message = 'display name already iin use';
-      response.writeHead(503, message);
-      response.end(`${message} [${name}]`);
-    }
+    display.connect(response.write);
   }
 
   /**

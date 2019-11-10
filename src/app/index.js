@@ -8,17 +8,22 @@ const { Presentation } = require('../lib/presentation');
 const server = new DisplayServer({ port: 1337 });
 server.listen();
 
-const display = new Display('arbeitszimmer');
+const display = new Display('test');
 server.addDisplay(display);
 
-const asset = new Asset('https://placekitten.com/1280/720');
+const asset = new Asset('https://placekitten.com/1280/720', {
+  type: 'image',
+  MIMEType: 'image/jpeg'
+});
 const slide = new ImageSlide(asset);
 
 const presentation = new Presentation();
 
-display.setPresentations([
-  presentation
-]);
+setInterval(() => {
+  display.setPresentations([
+    presentation
+  ]);
+}, 10000);
 
 presentation.loadSlide(slide);
 
