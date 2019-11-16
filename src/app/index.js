@@ -11,40 +11,76 @@ server.listen();
 const display = new Display('test');
 server.addDisplay(display);
 
-const asset = new Asset('https://placekitten.com/1280/720', {
+const asset0 = new Asset('https://placekitten.com/1280/720', {
   type: 'image',
   MIMEType: 'image/jpeg'
 });
-const slide = new ImageSlide(asset);
+
+const asset1 = new Asset('https://placekitten.com/1280/720', {
+  type: 'image',
+  MIMEType: 'image/png'
+});
+
+const slide0 = new ImageSlide(asset0);
+const slide1 = new ImageSlide(asset1);
 
 const presentation = new Presentation();
 
+display.setPresentations([
+  presentation
+]);
+
+const layer0 = new Layer(slide0);
+const layer1 = new Layer(slide1);
+
+layer0.setState({
+  this: 'is',
+  a: 1,
+  STATE: true
+});
+
+layer1.setState({
+  this: 'is',
+  a: 'second'
+});
+
+layer0.classList.add('first-class', 'second-class third-class', 'layer0__layer');
+layer1.classList.add('first-class', 'second-class third-class', 'layer1__layer');
+
+layer0.classList.remove('second-class');
+layer1.classList.remove('first-class');
+
+layer0.setState({
+  STATE: undefined
+});
+
+layer1.setState({
+  wurstsalat: true
+});
+
+let state = 0;
+
 setInterval(() => {
-  display.setPresentations([
-    presentation
-  ]);
-}, 10000);
+  switch (state) {
+    case 0:
+      presentation.setLayers([layer0, layer1]);
+      break;
+    case 1:
+      presentation.setLayers([layer1, layer0]);
+      break;
+    case 2:
+      presentation.setLayers([layer0]);
+      break;
+    case 3:
+      presentation.setLayers([layer1]);
+      break;
+    case 4:
+      presentation.setLayers([]);
+      break;
+    default:
+  }
 
-presentation.loadSlide(slide);
-
-setTimeout(() => {
-  const layer = new Layer(slide);
-
-  layer.setState({
-    this: 'is',
-    a: 1,
-    STATE: true
-  });
-
-  layer.classList.add('first-class', 'second-class third-class');
-
-  presentation.setLayers([layer]);
-
-  layer.classList.remove('second-class');
-
-  layer.setState({
-    STATE: undefined
-  });
+  state = (state === 4) ? 0 : (state + 1);
 }, 10000);
 
 module.exports = undefined;
