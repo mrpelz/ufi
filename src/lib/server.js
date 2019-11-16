@@ -38,30 +38,30 @@ class DisplayServerDisplay {
   get _data() {
     const presentations = [...this.display.presentations];
 
-    const layers = /** @type {I_Layer[]} */ [...new Set(([]).concat(
+    const layers = /** @type {I_Layer[]} */ ([...new Set(([]).concat(
       ...presentations.map(({ layers: l }) => [...l])
-    ))];
+    ))]);
 
-    const slides = /** @type {I_AnySlide[]} */ [...new Set(([]).concat(
+    const slides = /** @type {I_AnySlide[]} */ ([...new Set(([]).concat(
       ...layers.map(({ slide: s }) => s),
       ...presentations.map(
         (presentation) => /** @type {I_AnySlide[]} */ ([]).concat(
           ...presentation.slides
         )
       )
-    ))];
+    ))]);
 
-    const assets = /** @type {I_Asset[]} */ [...new Set(([]).concat(
+    const assets = /** @type {I_Asset[]} */ ([...new Set(([]).concat(
       ...slides.map((slide) => [...slide.assets])
-    ))];
+    ))]);
 
     return {
       assets: assets.map((asset) => ({
-        id: asset.id,
         hash: asset.hash,
+        id: asset.id,
         MIMEType: asset.MIMEType,
-        url: asset.url.toString(),
-        type: asset.type
+        type: asset.type,
+        url: asset.url.toString()
       })),
       slides: slides.map((slide) => ({
         assets: [...slide.assets].map((asset) => asset.id),
