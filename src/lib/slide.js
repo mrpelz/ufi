@@ -5,16 +5,13 @@ const { uuid } = require('./utils');
  * @type {InstanceType<import('./asset.js')['Asset']>}
  */
 
-/**
+ /**
  * @typedef AnySlide
- * @type {HTMLSlide | ImageSlide | VideoSlide}
+ * @type {InstanceType<typeof slides.HTMLSlide>
+ * | InstanceType<typeof slides.ImageSlide>
+ * | InstanceType<typeof slides.ReactSlide>
+ * | InstanceType<typeof slides.VideoSlide>}
  */
-
-const types = {
-  html: Symbol('html'),
-  image: Symbol('image'),
-  video: Symbol('video')
-};
 
 /**
  * @class Slide
@@ -22,7 +19,7 @@ const types = {
 class Slide {
 
   /**
-   * @param  {symbol|null} type
+   * @param  {symbol} type
    * @param  {...I_Asset} assets
    */
   constructor(type, ...assets) {
@@ -33,46 +30,31 @@ class Slide {
 }
 
 /**
- * @class HTMLSlide
+ * @param {symbol} type
  */
-class HTMLSlide extends Slide {
+const extendSlide = (type) => (
 
   /**
-   * @param  {...I_Asset} assets
+   * @returns {Slide}
    */
-  constructor(...assets) {
-    super(types.html, ...assets);
+  class extends Slide {
+
+    /**
+     * @param  {...I_Asset} assets
+     */
+    constructor(...assets) {
+      super(type, ...assets);
+    }
   }
-}
+);
 
-/**
- * @class ImageSlide
- */
-class ImageSlide extends Slide {
-
-  /**
-   * @param  {I_Asset} asset
-   */
-  constructor(asset) {
-    super(types.image, asset);
-  }
-}
-
-/**
- * @class ImageSlide
- */
-class VideoSlide extends Slide {
-
-  /**
-   * @param  {I_Asset} asset
-   */
-  constructor(asset) {
-    super(types.video, asset);
-  }
-}
+const slides = {
+  HTMLSlide: extendSlide(Symbol('html')),
+  ImageSlide: extendSlide(Symbol('image')),
+  ReactSlide: extendSlide(Symbol('react')),
+  VideoSlide: extendSlide(Symbol('video'))
+};
 
 module.exports = {
-  HTMLSlide,
-  ImageSlide,
-  VideoSlide
+  ...slides
 };

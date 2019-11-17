@@ -10,7 +10,8 @@ declare type PreloadType =
   |'style'
   |'track'
   |'worker'
-  |'video';
+  |'video'
+  |'modulepreload';
 
 declare type PreloadMIMEType =
   | '.c++'
