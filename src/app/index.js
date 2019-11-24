@@ -35,11 +35,8 @@ const layer0 = new Layer(imageSlide);
 const layer1 = new Layer(htmlSlide);
 const layer2 = new Layer(reactSlide);
 
-layer0.classList.add('left-half');
-layer1.classList.add('right-half');
 layer2.classList.add('bottom-half');
 
-presentation0.loadSlide(imageSlide);
 presentation0.loadSlide(htmlSlide);
 presentation1.loadSlide(reactSlide);
 
@@ -48,16 +45,21 @@ displayTest.setPresentations([
   presentation1
 ]);
 
-presentation1.setLayers([layer2]);
-
 let state = 0;
 
 setInterval(() => {
   switch (state) {
     case 0:
+      layer0.classList.replace('right-half', 'left-half');
+      layer1.classList.replace('left-half', 'right-half');
+
+      presentation1.setLayers([layer2]);
       presentation0.setLayers([layer0, layer1]);
       break;
     case 1:
+      layer0.classList.replace('left-half', 'right-half');
+      layer1.classList.replace('right-half', 'left-half');
+
       presentation0.setLayers([layer1, layer0]);
       break;
     case 2:
@@ -69,10 +71,13 @@ setInterval(() => {
     case 4:
       presentation0.setLayers([]);
       break;
+    case 5:
+      presentation1.setLayers([]);
+      break;
     default:
   }
 
-  state = (state === 4) ? 0 : (state + 1);
+  state = (state === 5) ? 0 : (state + 1);
 }, 10000);
 
 module.exports = undefined;
