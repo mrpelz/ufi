@@ -3,13 +3,13 @@ const { changeEvent: layerChangeEvent } = require('./layer');
 const { rebind, uuid } = require('./utils');
 
 /**
- * @typedef I_Layer
- * @type {InstanceType<import('./layer')['Layer']>}
+ * @typedef I_AnyLayer
+ * @type {import('./layer').AnyLayer}
  */
 
- /**
- * @typedef I_AnySlide
- * @type {import('./slide').AnySlide}
+/**
+ * @typedef PresentationContent
+ * @type {I_AnyLayer|Presentation}
  */
 
 const changeEvent = Symbol('change');
@@ -22,8 +22,8 @@ class Presentation extends EventEmitter {
     super();
 
     this.id = uuid();
-    this.layers = /** @type {Set<I_Layer>} */ (new Set());
-    this.slides = /** @type {Set<I_AnySlide>} */ (new Set());
+    this.layers = /** @type {Set<PresentationContent>} */ (new Set());
+    this.preload = /** @type {Set<PresentationContent>} */ (new Set());
 
     rebind(this, '_onChange');
   }
@@ -33,36 +33,47 @@ class Presentation extends EventEmitter {
   }
 
   /**
-   * @param {I_AnySlide} slide
+   * @param {PresentationContent} layer
    */
-  loadSlide(slide) {
-    this.slides.add(slide);
+  preloadLayer(layer) {
+    this.preload.add(layer);
 
     this._onChange();
   }
 
   /**
-   * @param {I_AnySlide} slide
+   * @param {PresentationContent} layer
    */
-  unloadSlide(slide) {
-    this.slides.delete(slide);
+  unloadLayer(layer) {
+    if (this.preload.has(layer)) {
+      this.preload.delete(layer);
 
-    this._onChange();
+      this._onChange();
+    }
   }
 
   /**
-   * @param {I_Layer[]} layers
+   * @param {PresentationContent[]} layers
    */
   setLayers(layers) {
     [...this.layers].forEach((layer) => {
-      layer.removeListener(layerChangeEvent, this._onChange);
+      const eventIdentifier = layer instanceof Presentation
+        ? changeEvent
+        : layerChangeEvent;
+
+        layer.removeListener(eventIdentifier, this._onChange);
     });
 
     this.layers.clear();
 
     layers.forEach((layer) => {
       this.layers.add(layer);
-      layer.on(layerChangeEvent, this._onChange);
+
+      const eventIdentifier = layer instanceof Presentation
+        ? changeEvent
+        : layerChangeEvent;
+
+      layer.on(eventIdentifier, this._onChange);
     });
 
     this._onChange();

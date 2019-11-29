@@ -1,5 +1,6 @@
 const { Server } = require('http');
 const { rebind } = require('./utils');
+const { Presentation } = require('./presentation');
 
 /**
  * @typedef I_Display
@@ -7,19 +8,44 @@ const { rebind } = require('./utils');
  */
 
  /**
- * @typedef I_Layer
- * @type {InstanceType<import('./layer')['Layer']>}
+ * @typedef I_AnyLayer
+ * @type {import('./layer').AnyLayer}
  */
 
  /**
- * @typedef I_AnySlide
- * @type {import('./slide').AnySlide}
+ * @typedef I_PresentationContent
+ * @type {import('./presentation').PresentationContent}
  */
 
  /**
  * @typedef I_Asset
  * @type {InstanceType<import('./asset')['Asset']>}
  */
+
+
+/**
+ * @param {Set<I_PresentationContent>} items
+ * @param {'layers'|'preload'} itemsProp
+ * @param {Set<I_AnyLayer>} collection
+ * @returns {Set<I_AnyLayer>}
+ */
+function getPresentationLayers(
+  items,
+  itemsProp,
+  collection = /** @type {Set<I_AnyLayer>} */ (new Set())
+) {
+  items.forEach((item) => {
+    if (item instanceof Presentation) {
+      getPresentationLayers(item[itemsProp], itemsProp, collection);
+
+      return;
+    }
+
+    collection.add(item);
+  });
+
+  return collection;
+}
 
 class DisplayServerDisplay {
 
@@ -36,43 +62,39 @@ class DisplayServerDisplay {
   }
 
   get _data() {
-    const presentations = [...this.display.presentations];
+    const presentations = this.display.presentations;
 
-    const layers = /** @type {I_Layer[]} */ ([...new Set(([]).concat(
-      ...presentations.map(({ layers: l }) => [...l])
-    ))]);
+    const layers = getPresentationLayers(presentations, 'layers');
+    const preload = getPresentationLayers(presentations, 'preload');
 
-    const slides = /** @type {I_AnySlide[]} */ ([...new Set(([]).concat(
-      ...layers.map(({ slide: s }) => s),
-      ...presentations.map(
-        (presentation) => /** @type {I_AnySlide[]} */ ([]).concat(
-          ...presentation.slides
-        )
+    const assets = /** @type {Set<I_Asset>} */ (new Set());
+
+    layers.forEach(
+      ({ assets: layerAssets }) => layerAssets.forEach(
+        (layerAsset) => assets.add(layerAsset)
       )
-    ))]);
+    );
 
-    const assets = /** @type {I_Asset[]} */ ([...new Set(([]).concat(
-      ...slides.map((slide) => [...slide.assets])
-    ))]);
+    preload.forEach(
+      ({ assets: layerAssets }) => layerAssets.forEach(
+        (layerAsset) => assets.add(layerAsset)
+      )
+    );
 
     return {
-      assets: assets.map((asset) => ({
+      assets: [...assets].map((asset) => ({
         hash: asset.hash,
         id: asset.id,
         MIMEType: asset.MIMEType,
         type: asset.type,
         url: asset.url.toString()
       })),
-      slides: slides.map((slide) => ({
-        assets: [...slide.assets].map((asset) => asset.id),
-        id: slide.id,
-        type: slide.type.description
-      })),
-      layers: layers.map((layer) => ({
+      layers: [...layers].map((layer) => ({
+        assets: [...layer.assets].map((asset) => asset.id),
         classNames: layer.classList.toString(),
         id: layer.id,
-        slide: layer.slide.id,
-        state: layer.state
+        state: layer.state,
+        type: layer.type.description
       }))
     };
   }

@@ -2,8 +2,16 @@ const EventEmitter = require('events');
 const { deepMerge, uuid } = require('./utils');
 
 /**
- * @typedef I_AnySlide
- * @type {import('./slide.js').AnySlide}
+ * @typedef I_Asset
+ * @type {InstanceType<import('./asset.js')['Asset']>}
+ */
+
+ /**
+ * @typedef AnyLayer
+ * @type {InstanceType<typeof layers.HTMLLayer>
+ * | InstanceType<typeof layers.ImageLayer>
+ * | InstanceType<typeof layers.ModuleLayer>
+ * | InstanceType<typeof layers.VideoLayer>}
  */
 
 const changeEvent = Symbol('change');
@@ -108,15 +116,17 @@ class ClassList extends EventEmitter {
 class Layer extends EventEmitter {
 
   /**
-   * @param {I_AnySlide} slide
+   * @param  {symbol} type
+   * @param  {...I_Asset} assets
    */
-  constructor(slide) {
+  constructor(type, ...assets) {
     super();
 
     this.id = uuid();
+    this.assets = new Set(assets);
     this.classList = new ClassList();
     this.state = /** @type {Object} */ ({});
-    this.slide = slide;
+    this.type = type;
 
     this.classList.on(changeEvent, () => this.emit(changeEvent));
   }
@@ -130,7 +140,33 @@ class Layer extends EventEmitter {
   }
 }
 
+/**
+ * @param {symbol} type
+ */
+const extendLayer = (type) => (
+
+  /**
+   * @returns {Layer}
+   */
+  class extends Layer {
+
+    /**
+     * @param  {...I_Asset} assets
+     */
+    constructor(...assets) {
+      super(type, ...assets);
+    }
+  }
+);
+
+const layers = {
+  HTMLLayer: extendLayer(Symbol('html')),
+  ImageLayer: extendLayer(Symbol('image')),
+  ModuleLayer: extendLayer(Symbol('module')),
+  VideoLayer: extendLayer(Symbol('video'))
+};
+
 module.exports = {
   changeEvent,
-  Layer
+  ...layers
 };
