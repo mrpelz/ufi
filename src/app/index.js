@@ -16,6 +16,9 @@ const clockLayer = new ModuleLayer(
   new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/clock/index.js', {
     type: 'modulepreload'
   }),
+  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/utils/easing.js', {
+    type: 'modulepreload'
+  }),
   new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/clock/index.css', {
     type: 'style'
   })
