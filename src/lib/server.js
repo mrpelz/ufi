@@ -56,9 +56,13 @@ class DisplayServerDisplay {
     this.display = display;
     this.connection = /** @type {import('http').ServerResponse['write']|null} */ (null);
 
-    rebind(this, '_publishMessage');
+    this.display.setChangeCallback(() => {
+      this._publishMessage(this._data, 'update');
+    });
 
-    this.display.setChangeCallback(this._publishMessage);
+    setInterval(() => {
+      this._publishMessage(null, 'keepalive');
+    }, 10000);
   }
 
   get _data() {
@@ -104,20 +108,24 @@ class DisplayServerDisplay {
   }
 
   /**
-    * @returns {boolean}
-    */
-  _publishMessage() {
+   * @param {any} data
+   * @param {string} type
+   * @returns {boolean}
+   */
+  _publishMessage(data, type) {
     if (!this.connection) return false;
-
-    const data = this._data;
 
     let payload = '';
 
-    // eslint-disable-next-line no-console
-    console.log(JSON.stringify(data, null, 2));
-
     try {
-      payload = JSON.stringify(data, null, null);
+      payload = JSON.stringify(
+        {
+          type,
+          data
+        },
+        null,
+        null
+      );
     } catch (_) {
       return false;
     }
