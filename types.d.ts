@@ -1,3 +1,18 @@
+declare type LayerState = {
+  layout?: {
+    alignX?: 'left' | 'center' | 'right';
+    alignY?: 'top' | 'center' | 'bottom';
+    backgroundColor?: string;
+    fromColumn?: number;
+    fromRow?: number;
+    spanColumns?: number;
+    spanRows?: number;
+    toColumn?: number;
+    toRow?: number;
+  };
+  data?: Object;
+};
+
 declare type PreloadType =
   |'audio'
   |'document'

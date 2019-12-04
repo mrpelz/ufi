@@ -95,7 +95,6 @@ class DisplayServerDisplay {
       })),
       layers: [...layers].map((layer) => ({
         assets: [...layer.assets].map((asset) => asset.id),
-        classNames: layer.classList.toString(),
         id: layer.id,
         state: layer.state,
         type: layer.type.description

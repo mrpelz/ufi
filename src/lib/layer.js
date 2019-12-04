@@ -16,100 +16,6 @@ const { deepMerge, uuid } = require('./utils');
 
 const changeEvent = Symbol('change');
 
-class ClassList extends EventEmitter {
-  constructor() {
-    super();
-
-    this._classes = /** @type {Set<string>} */ (new Set());
-  }
-
-  /**
-   * @param  {...string} items
-   */
-  add(...items) {
-    items.forEach((item) => {
-      item.split(' ').forEach((className) => {
-        this._classes.add(className);
-      });
-    });
-
-    this.emit(changeEvent);
-  }
-
-  /**
-   * @param {string} item
-   * @returns {boolean}
-   */
-  contains(item) {
-    return this._classes.has(item);
-  }
-
-  /**
-   * @param  {number} index
-   * @returns {string}
-   */
-  item(index) {
-    return this._classes[index];
-  }
-
-  /**
-   * @param  {...string} items
-   */
-  remove(...items) {
-    items.forEach((item) => {
-      item.split(' ').forEach((className) => {
-        this._classes.delete(className);
-      });
-    });
-
-    this.emit(changeEvent);
-  }
-
-  /**
-   * @param {string} oldItem
-   * @param {string} newItem
-   */
-  replace(oldItem, newItem) {
-    this._classes.delete(oldItem);
-    this._classes.add(newItem);
-
-    this.emit(changeEvent);
-  }
-
-  /**
-   * @param {string} item
-   * @param {boolean|null} force
-   */
-  toggle(item, force = null) {
-    if (force === null) {
-      if (this.contains(item)) {
-        this.remove(item);
-
-        return;
-      }
-
-      this.add(item);
-
-      return;
-    }
-
-    if (!force) {
-      this.remove(item);
-
-      return;
-    }
-
-    this.add(item);
-  }
-
-  /**
-   * @returns {string}
-   */
-  toString() {
-    return [...this._classes].join(' ');
-  }
-}
-
 /**
  * @class Layer
  */
@@ -124,15 +30,19 @@ class Layer extends EventEmitter {
 
     this.id = uuid();
     this.assets = new Set(assets);
-    this.classList = new ClassList();
-    this.state = /** @type {Object} */ ({});
+    this.state = /** @type {LayerState} */ ({
+      layout: {
+        alignX: 'center',
+        alignY: 'center',
+        spanColumns: 10,
+        spanRows: 10
+      }
+    });
     this.type = type;
-
-    this.classList.on(changeEvent, () => this.emit(changeEvent));
   }
 
   /**
-   * @param {Object} data
+   * @param {LayerState} data
    */
   setState(data) {
     deepMerge(this.state, data);
