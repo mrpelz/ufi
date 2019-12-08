@@ -1,5 +1,5 @@
 const EventEmitter = require('events');
-const { deepMerge, uuid } = require('./utils');
+const { deepMerge, structuredClone, uuid } = require('./utils');
 
 /**
  * @typedef I_Asset
@@ -16,6 +16,15 @@ const { deepMerge, uuid } = require('./utils');
 
 const changeEvent = Symbol('change');
 
+const initialState = /** @type {LayerState} */ ({
+  layout: {
+    alignX: 'center',
+    alignY: 'center',
+    spanColumns: 10,
+    spanRows: 10
+  }
+});
+
 /**
  * @class Layer
  */
@@ -30,14 +39,7 @@ class Layer extends EventEmitter {
 
     this.id = uuid();
     this.assets = new Set(assets);
-    this.state = /** @type {LayerState} */ ({
-      layout: {
-        alignX: 'center',
-        alignY: 'center',
-        spanColumns: 10,
-        spanRows: 10
-      }
-    });
+    this.state = /** @type {LayerState} */ (structuredClone(initialState));
     this.type = type;
   }
 

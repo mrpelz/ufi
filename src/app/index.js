@@ -25,9 +25,15 @@ const clockLayer = new ModuleLayer(
 );
 
 clockLayer.setState({
-  layout: {
-    spanColumns: 6,
-    alignX: 'right'
+  data: {
+    borderColor: null,
+    centerColor: null,
+    faceColor: '#FFFFFF80',
+    fillColor: null,
+    labelColor: '#FFFFFF80',
+    hoursHandColor: '#FFFFFF80',
+    minutesHandColor: '#FFFFFF80',
+    secondsHandColor: '#FF000080'
   }
 });
 

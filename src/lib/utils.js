@@ -1,3 +1,5 @@
+const { deserialize, serialize } = require('v8');
+
 function isObject(input) {
   return input instanceof Object
     && !(input instanceof Function);
@@ -66,6 +68,13 @@ function rebind(context, ...names) {
   });
 }
 
+/**
+ * @param {any} value
+ */
+function structuredClone(value) {
+  return deserialize(serialize(value));
+}
+
 /* eslint-disable */
 /**
  *
@@ -81,5 +90,6 @@ module.exports = {
   log,
   logLevels,
   rebind,
+  structuredClone,
   uuid
 };
