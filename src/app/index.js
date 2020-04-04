@@ -1,7 +1,7 @@
 const { Asset } = require('../lib/asset');
 const { Display } = require('../lib/display');
 const { DisplayServer } = require('../lib/server');
-const { ModuleLayer } = require('../lib/layer');
+const { ModuleLayer, VideoLayer } = require('../lib/layer');
 const { Presentation } = require('../lib/presentation');
 
 const server = new DisplayServer({ port: 1337 });
@@ -28,18 +28,31 @@ clockLayer.setState({
   data: {
     borderColor: null,
     centerColor: null,
-    faceColor: '#FFFFFF',
+    faceColor: '#FFFFFF80',
     fillColor: null,
-    labelColor: '#FFFFFF',
-    hoursHandColor: '#FFFFFF',
-    minutesHandColor: '#FFFFFF',
-    secondsHandColor: '#FF0000'
+    labelColor: '#FFFFFF80',
+    hoursHandColor: '#FFFFFF80',
+    minutesHandColor: '#FFFFFF80',
+    secondsHandColor: '#FF000080'
+  }
+});
+
+const videoLayer = new VideoLayer(
+  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-assets/bin/greenland_3.mp4', {
+    type: 'video'
+  })
+);
+
+videoLayer.setState({
+  layout: {
+    spanColumns: 12,
+    spanRows: 12
   }
 });
 
 const presentation0 = new Presentation();
 
-presentation0.setLayers([clockLayer]);
+presentation0.setLayers([videoLayer, clockLayer]);
 
 displayTest.setPresentations([
   presentation0
