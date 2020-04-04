@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "UFI – Universelle, flexible Informationsanzeige – universal, flexible info display",
   "engines": {
-    "node" : "v12.13.0"
+    "node": "v12.13.0"
   },
   "main": "src/index.js",
   "scripts": {
     "deploy": "scripts/deploy.sh",
-    "push": "git push origin --force && git push github --force",
+    "push": "git push -u origin master --force && git push -u github master --force",
     "start": "echo \"use systemd with 'ufi.service'-file to start this service in a production environment\nfor testing purposes, use 'npm run start:dev'\"",
     "start:dev": "node --use_strict src/index.js"
   },
@@ -17,5 +17,12 @@
     "url": "usp.wurstsalat.cloud:git/ufi.git"
   },
   "author": "Lennart Pelz <mail@mrpelz.de>",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.26.0",
+    "@typescript-eslint/parser": "^2.26.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-import": "^2.20.2",
+    "typescript": "^3.8.3"
+  }
 }
