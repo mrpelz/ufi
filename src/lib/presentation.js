@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 const { changeEvent: layerChangeEvent } = require('./layer');
 const { rebind, uuid } = require('./utils');
 
@@ -61,7 +61,7 @@ class Presentation extends EventEmitter {
         ? changeEvent
         : layerChangeEvent;
 
-        layer.removeListener(eventIdentifier, this._onChange);
+      layer.removeListener(eventIdentifier, this._onChange);
     });
 
     this.layers.clear();

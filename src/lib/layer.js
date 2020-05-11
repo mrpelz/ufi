@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 const { deepMerge, structuredClone, uuid } = require('./utils');
 
 /**
@@ -6,13 +6,13 @@ const { deepMerge, structuredClone, uuid } = require('./utils');
  * @type {InstanceType<import('./asset.js')['Asset']>}
  */
 
- /**
+/**
  * @typedef AnyLayer
  * @type {InstanceType<typeof layers.HTMLLayer>
  * | InstanceType<typeof layers.ImageLayer>
  * | InstanceType<typeof layers.ModuleLayer>
  * | InstanceType<typeof layers.VideoLayer>}
- */
+*/
 
 const changeEvent = Symbol('change');
 
