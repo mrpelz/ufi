@@ -29,8 +29,7 @@ server.addDisplay(displayEsszimmer);
 const displayWohnzimmer = new Display('wohnzimmer');
 server.addDisplay(displayWohnzimmer);
 
-
-const clockLayer = new ModuleLayer(
+const mobaTimeAssets = [
   new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/moba-time/index.js', {
     type: 'modulepreload'
   }),
@@ -40,7 +39,34 @@ const clockLayer = new ModuleLayer(
   new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/moba-time/index.css', {
     type: 'style'
   })
-);
+];
+
+const mobaTimeLayer = new ModuleLayer(...mobaTimeAssets);
+const mobaTimeLayerClassic = new ModuleLayer(...mobaTimeAssets);
+
+const defaultLayers = [
+  mobaTimeLayer,
+  mobaTimeLayerClassic
+];
+
+mobaTimeLayer.setState({
+  layout: {
+    fromColumn: 2,
+    toColumn: 6
+  }
+});
+
+mobaTimeLayerClassic.setState({
+  layout: {
+    fromColumn: 8,
+    toColumn: 11
+  },
+  data: {
+    config: {
+      design: 'classic'
+    }
+  }
+});
 
 const presentationGlobal = new Presentation();
 
@@ -81,9 +107,7 @@ const handleResponse = (request, response) => {
   // eslint-disable-next-line default-case
   switch (request.url) {
     case '/on':
-      presentationGlobal.setLayers([
-        clockLayer
-      ]);
+      presentationGlobal.setLayers(defaultLayers);
       break;
     case '/off':
       presentationGlobal.setLayers([]);
