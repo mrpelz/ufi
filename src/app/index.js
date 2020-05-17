@@ -31,13 +31,13 @@ server.addDisplay(displayWohnzimmer);
 
 
 const clockLayer = new ModuleLayer(
-  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/clock/index.js', {
+  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/moba-time/index.js', {
     type: 'modulepreload'
   }),
   new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/utils/easing.js', {
     type: 'modulepreload'
   }),
-  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/clock/index.css', {
+  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/moba-time/index.css', {
     type: 'style'
   })
 );
