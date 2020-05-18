@@ -29,7 +29,7 @@ server.addDisplay(displayEsszimmer);
 const displayWohnzimmer = new Display('wohnzimmer');
 server.addDisplay(displayWohnzimmer);
 
-const mobaTimeAssets = [
+const mobaTimeLayer = new ModuleLayer(
   new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/moba-time/index.js', {
     type: 'modulepreload'
   }),
@@ -39,32 +39,36 @@ const mobaTimeAssets = [
   new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/moba-time/index.css', {
     type: 'style'
   })
-];
+);
 
-const mobaTimeLayer = new ModuleLayer(...mobaTimeAssets);
-const mobaTimeLayerClassic = new ModuleLayer(...mobaTimeAssets);
-
-const defaultLayers = [
-  mobaTimeLayer,
-  mobaTimeLayerClassic
-];
+const ringTimeLayer = new ModuleLayer(
+  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/ring-time/index.js', {
+    type: 'modulepreload'
+  }),
+  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/utils/time.js', {
+    type: 'modulepreload'
+  }),
+  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/ring-time/index.css', {
+    type: 'style'
+  })
+);
 
 mobaTimeLayer.setState({
   layout: {
     fromColumn: 2,
     toColumn: 6
-  }
+  },
+  // data: {
+  //   config: {
+  //     design: 'classic'
+  //   }
+  // }
 });
 
-mobaTimeLayerClassic.setState({
+ringTimeLayer.setState({
   layout: {
     fromColumn: 8,
     toColumn: 11
-  },
-  data: {
-    config: {
-      design: 'classic'
-    }
   }
 });
 
@@ -107,7 +111,10 @@ const handleResponse = (request, response) => {
   // eslint-disable-next-line default-case
   switch (request.url) {
     case '/on':
-      presentationGlobal.setLayers(defaultLayers);
+      presentationGlobal.setLayers([
+        mobaTimeLayer,
+        ringTimeLayer
+      ]);
       break;
     case '/off':
       presentationGlobal.setLayers([]);
