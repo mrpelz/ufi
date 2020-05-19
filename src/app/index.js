@@ -29,18 +29,6 @@ server.addDisplay(displayEsszimmer);
 const displayWohnzimmer = new Display('wohnzimmer');
 server.addDisplay(displayWohnzimmer);
 
-const mobaTimeLayer = new ModuleLayer(
-  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/moba-time/index.js', {
-    type: 'modulepreload'
-  }),
-  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/utils/easing.js', {
-    type: 'modulepreload'
-  }),
-  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/moba-time/index.css', {
-    type: 'style'
-  })
-);
-
 const ringTimeLayer = new ModuleLayer(
   new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/ring-time/index.js', {
     type: 'modulepreload'
@@ -52,25 +40,6 @@ const ringTimeLayer = new ModuleLayer(
     type: 'style'
   })
 );
-
-mobaTimeLayer.setState({
-  layout: {
-    fromColumn: 2,
-    toColumn: 6
-  },
-  // data: {
-  //   config: {
-  //     design: 'classic'
-  //   }
-  // }
-});
-
-ringTimeLayer.setState({
-  layout: {
-    fromColumn: 8,
-    toColumn: 11
-  }
-});
 
 const presentationGlobal = new Presentation();
 
@@ -112,7 +81,6 @@ const handleResponse = (request, response) => {
   switch (request.url) {
     case '/on':
       presentationGlobal.setLayers([
-        mobaTimeLayer,
         ringTimeLayer
       ]);
       break;
