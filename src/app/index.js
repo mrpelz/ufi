@@ -3,7 +3,7 @@ const { Server } = require('http');
 const { Asset } = require('../lib/asset');
 const { Display } = require('../lib/display');
 const { DisplayServer } = require('../lib/server');
-const { ModuleLayer } = require('../lib/layer');
+const { ImageLayer, ModuleLayer } = require('../lib/layer');
 const { Presentation } = require('../lib/presentation');
 
 
@@ -42,7 +42,7 @@ const ringTimeLayer = new ModuleLayer(
 );
 
 const presentationGlobal = new Presentation();
-
+const twitterPresentation = new Presentation();
 
 displayTest.setPresentations([
   presentationGlobal
@@ -73,6 +73,37 @@ const triggerServer = new Server();
 triggerServer.listen(1338);
 
 /**
+ * @param {string} body
+ */
+const handleTweetImage = (body) => {
+  let asset;
+
+  try {
+    asset = new Asset(body, {
+      type: 'image'
+    });
+  } catch (_) {}
+
+  if (!asset) return;
+
+  const imageLayer = new ImageLayer(asset);
+  imageLayer.setState({
+    layout: {
+      fromColumn: 1,
+      toColumn: 12,
+      fromRow: 1,
+      toRow: 12
+    }
+  });
+
+  twitterPresentation.setLayers([imageLayer]);
+
+  setTimeout(() => {
+    twitterPresentation.setLayers([]);
+  }, 10000);
+};
+
+/**
  * @param {import('http').IncomingMessage} request
  * @param {import('http').ServerResponse} response
  */
@@ -81,11 +112,25 @@ const handleResponse = (request, response) => {
   switch (request.url) {
     case '/on':
       presentationGlobal.setLayers([
-        ringTimeLayer
+        ringTimeLayer,
+        twitterPresentation
       ]);
       break;
     case '/off':
       presentationGlobal.setLayers([]);
+      break;
+    case '/tweet_image':
+      if (request.method == 'POST') {
+        let body = '';
+
+        request.on('data', (data) => {
+            body += data;
+        });
+
+        request.on('end', () => {
+          handleTweetImage(body);
+        });
+      }
       break;
   }
 
