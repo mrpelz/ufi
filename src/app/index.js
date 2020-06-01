@@ -72,12 +72,32 @@ const triggerServer = new Server();
 triggerServer.listen(1338);
 
 
-const imagePresentation = new Presentation();
+const presentationImages = new Presentation();
+const preloadedImages = /** @type {Map<String, import('../lib/layer').AnyLayer>} */ (new Map());
+
+/**
+ * @param {import('http').IncomingMessage} request
+ * @param {(data: string) => void} callback
+ */
+const handlePostData = (request, callback) => {
+  if (request.method === 'POST') {
+    const body = /** @type {Buffer[]} */ ([]);
+
+    request.on('data', (data) => {
+      body.push(data);
+    });
+
+    request.on('end', () => {
+      const data = Buffer.concat(body).toString();
+      callback(data);
+    });
+  }
+};
 
 /**
  * @param {string} url
  */
-const handleImage = (url) => {
+const createImageLayer = (url) => {
   let asset;
 
   if (url) {
@@ -90,20 +110,68 @@ const handleImage = (url) => {
     }
   }
 
-  if (url && asset) {
-    const imageLayer = new ImageLayer(asset);
-    imageLayer.setState({
-      layout: {
-        fromColumn: 1,
-        toColumn: 12,
-        fromRow: 1,
-        toRow: 12
-      }
-    });
+  if (!url || !asset) return null;
 
-    imagePresentation.setLayers([imageLayer]);
+  const imageLayer = new ImageLayer(asset);
+  imageLayer.setState({
+    layout: {
+      fromColumn: 1,
+      toColumn: 12,
+      fromRow: 1,
+      toRow: 12,
+      backgroundColor: 'black'
+    }
+  });
+
+  return imageLayer;
+};
+
+/**
+ * @param {string} url
+ */
+const handleImagePreload = (url) => {
+  const imageLayer = createImageLayer(url);
+
+  if (!imageLayer) return;
+
+  preloadedImages.set(url, imageLayer);
+  presentationImages.preloadLayer(imageLayer);
+};
+
+/**
+ * @param {string} url
+ */
+const handleImageDisplay = (url) => {
+  if (!url) return;
+
+  let imageLayer = preloadedImages.get(url);
+
+  if (!imageLayer) {
+    imageLayer = createImageLayer(url);
+  }
+
+  if (!imageLayer) return;
+
+  presentationImages.setLayers([imageLayer]);
+};
+
+/**
+ * @param {string} url
+ */
+const handleImageUnload = (url) => {
+  presentationImages.setLayers([]);
+
+  if (url) {
+    const imageLayer = preloadedImages.get(url);
+    if (!imageLayer) return;
+
+    presentationImages.unloadLayer(imageLayer);
+    preloadedImages.delete(url);
   } else {
-    imagePresentation.setLayers([]);
+    preloadedImages.forEach((imageLayer) => {
+      presentationImages.unloadLayer(imageLayer);
+      preloadedImages.clear();
+    });
   }
 };
 
@@ -118,25 +186,20 @@ const handleResponse = (request, response) => {
     case '/on':
       presentationGlobal.setLayers([
         ringTimeLayer,
-        imagePresentation
+        presentationImages
       ]);
       break;
     case '/off':
       presentationGlobal.setLayers([]);
       break;
-    case '/image':
-      if (request.method === 'POST') {
-        const body = /** @type {Buffer[]} */ ([]);
-
-        request.on('data', (data) => {
-          body.push(data);
-        });
-
-        request.on('end', () => {
-          const url = Buffer.concat(body).toString();
-          handleImage(url);
-        });
-      }
+    case '/image_preload':
+      handlePostData(request, handleImagePreload);
+      break;
+    case '/image_display':
+      handlePostData(request, handleImageDisplay);
+      break;
+    case '/image_unload':
+      handlePostData(request, handleImageUnload);
       break;
   }
 
