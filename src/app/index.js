@@ -42,7 +42,6 @@ const ringTimeLayer = new ModuleLayer(
 );
 
 const presentationGlobal = new Presentation();
-const twitterPresentation = new Presentation();
 
 displayTest.setPresentations([
   presentationGlobal
@@ -72,6 +71,9 @@ displayWohnzimmer.setPresentations([
 const triggerServer = new Server();
 triggerServer.listen(1338);
 
+
+const twitterPresentation = new Presentation();
+
 /**
  * @param {string} body
  */
@@ -82,7 +84,9 @@ const handleTweetImage = (body) => {
     asset = new Asset(body, {
       type: 'image'
     });
-  } catch (_) {}
+  } catch (_) {
+    // noop
+  }
 
   if (!asset) return;
 
@@ -103,6 +107,7 @@ const handleTweetImage = (body) => {
   }, 10000);
 };
 
+
 /**
  * @param {import('http').IncomingMessage} request
  * @param {import('http').ServerResponse} response
@@ -120,11 +125,11 @@ const handleResponse = (request, response) => {
       presentationGlobal.setLayers([]);
       break;
     case '/tweet_image':
-      if (request.method == 'POST') {
+      if (request.method === 'POST') {
         let body = '';
 
         request.on('data', (data) => {
-            body += data;
+          body += data;
         });
 
         request.on('end', () => {
