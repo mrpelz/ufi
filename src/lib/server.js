@@ -7,36 +7,55 @@ const { Presentation } = require('./presentation');
  * @type {InstanceType<import('./display')['Display']>}
  */
 
- /**
+/**
  * @typedef I_AnyLayer
  * @type {import('./layer').AnyLayer}
- */
+*/
 
- /**
+/**
  * @typedef I_PresentationContent
  * @type {import('./presentation').PresentationContent}
- */
+*/
 
- /**
+/**
  * @typedef I_Asset
  * @type {InstanceType<import('./asset')['Asset']>}
- */
+*/
 
 
 /**
  * @param {Set<I_PresentationContent>} items
- * @param {'layers'|'preload'} itemsProp
  * @param {Set<I_AnyLayer>} collection
- * @returns {Set<I_AnyLayer>}
  */
-function getPresentationLayers(
+function getPresentedLayers(
   items,
-  itemsProp,
   collection = /** @type {Set<I_AnyLayer>} */ (new Set())
 ) {
   items.forEach((item) => {
     if (item instanceof Presentation) {
-      getPresentationLayers(item[itemsProp], itemsProp, collection);
+      getPresentedLayers(item.layers, collection);
+
+      return;
+    }
+
+    collection.add(item);
+  });
+
+  return collection;
+}
+
+/**
+ * @param {Set<I_PresentationContent>} items
+ * @param {Set<I_AnyLayer>} collection
+ */
+function getPreloadedLayers(
+  items,
+  collection = /** @type {Set<I_AnyLayer>} */ (new Set())
+) {
+  items.forEach((item) => {
+    if (item instanceof Presentation) {
+      getPreloadedLayers(item.layers, collection);
+      getPreloadedLayers(item.preload, collection);
 
       return;
     }
@@ -68,18 +87,18 @@ class DisplayServerDisplay {
   get _data() {
     const presentations = this.display.presentations;
 
-    const layers = getPresentationLayers(presentations, 'layers');
-    const preload = getPresentationLayers(presentations, 'preload');
+    const presented = getPresentedLayers(presentations);
+    const preloaded = getPreloadedLayers(presentations);
 
     const assets = /** @type {Set<I_Asset>} */ (new Set());
 
-    layers.forEach(
+    presented.forEach(
       ({ assets: layerAssets }) => layerAssets.forEach(
         (layerAsset) => assets.add(layerAsset)
       )
     );
 
-    preload.forEach(
+    preloaded.forEach(
       ({ assets: layerAssets }) => layerAssets.forEach(
         (layerAsset) => assets.add(layerAsset)
       )
@@ -93,7 +112,7 @@ class DisplayServerDisplay {
         type: asset.type,
         url: asset.url.toString()
       })),
-      layers: [...layers].map((layer) => ({
+      layers: [...presented].map((layer) => ({
         assets: [...layer.assets].map((asset) => asset.id),
         id: layer.id,
         state: layer.state,

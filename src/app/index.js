@@ -72,12 +72,12 @@ const triggerServer = new Server();
 triggerServer.listen(1338);
 
 
-const twitterPresentation = new Presentation();
+const imagePresentation = new Presentation();
 
 /**
  * @param {string} url
  */
-const handleTweetImage = (url) => {
+const handleImage = (url) => {
   let asset;
 
   if (url) {
@@ -101,9 +101,9 @@ const handleTweetImage = (url) => {
       }
     });
 
-    twitterPresentation.setLayers([imageLayer]);
+    imagePresentation.setLayers([imageLayer]);
   } else {
-    twitterPresentation.setLayers([]);
+    imagePresentation.setLayers([]);
   }
 };
 
@@ -118,7 +118,7 @@ const handleResponse = (request, response) => {
     case '/on':
       presentationGlobal.setLayers([
         ringTimeLayer,
-        twitterPresentation
+        imagePresentation
       ]);
       break;
     case '/off':
@@ -134,7 +134,7 @@ const handleResponse = (request, response) => {
 
         request.on('end', () => {
           const url = Buffer.concat(body).toString();
-          handleTweetImage(url);
+          handleImage(url);
         });
       }
       break;
