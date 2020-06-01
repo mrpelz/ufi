@@ -75,36 +75,36 @@ triggerServer.listen(1338);
 const twitterPresentation = new Presentation();
 
 /**
- * @param {string} body
+ * @param {string} url
  */
-const handleTweetImage = (body) => {
+const handleTweetImage = (url) => {
   let asset;
 
-  try {
-    asset = new Asset(body, {
-      type: 'image'
-    });
-  } catch (_) {
-    // noop
+  if (url) {
+    try {
+      asset = new Asset(url, {
+        type: 'image'
+      });
+    } catch (_) {
+      // noop
+    }
   }
 
-  if (!asset) return;
+  if (url && asset) {
+    const imageLayer = new ImageLayer(asset);
+    imageLayer.setState({
+      layout: {
+        fromColumn: 1,
+        toColumn: 12,
+        fromRow: 1,
+        toRow: 12
+      }
+    });
 
-  const imageLayer = new ImageLayer(asset);
-  imageLayer.setState({
-    layout: {
-      fromColumn: 1,
-      toColumn: 12,
-      fromRow: 1,
-      toRow: 12
-    }
-  });
-
-  twitterPresentation.setLayers([imageLayer]);
-
-  setTimeout(() => {
+    twitterPresentation.setLayers([imageLayer]);
+  } else {
     twitterPresentation.setLayers([]);
-  }, 10000);
+  }
 };
 
 
@@ -124,16 +124,17 @@ const handleResponse = (request, response) => {
     case '/off':
       presentationGlobal.setLayers([]);
       break;
-    case '/tweet_image':
+    case '/image':
       if (request.method === 'POST') {
-        let body = '';
+        const body = /** @type {Buffer[]} */ ([]);
 
         request.on('data', (data) => {
-          body += data;
+          body.push(data);
         });
 
         request.on('end', () => {
-          handleTweetImage(body);
+          const url = Buffer.concat(body).toString();
+          handleTweetImage(url);
         });
       }
       break;
