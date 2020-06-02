@@ -161,17 +161,19 @@ const handleImageDisplay = (url) => {
 const handleImageUnload = (url) => {
   presentationImages.setLayers([]);
 
+  let imageLayer;
   if (url) {
-    const imageLayer = preloadedImages.get(url);
-    if (!imageLayer) return;
+    imageLayer = preloadedImages.get(url);
+  }
 
+  if (imageLayer) {
     presentationImages.unloadLayer(imageLayer);
     preloadedImages.delete(url);
   } else {
-    preloadedImages.forEach((imageLayer) => {
-      presentationImages.unloadLayer(imageLayer);
-      preloadedImages.clear();
+    preloadedImages.forEach((layer) => {
+      presentationImages.unloadLayer(layer);
     });
+    preloadedImages.clear();
   }
 };
 
