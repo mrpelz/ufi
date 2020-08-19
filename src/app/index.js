@@ -40,6 +40,14 @@ const ringTimeLayer = new ModuleLayer(
     type: 'style'
   })
 );
+ringTimeLayer.setState({
+  layout: {
+    fromColumn: 1,
+    toColumn: 12,
+    fromRow: 1,
+    toRow: 12
+  }
+});
 
 const presentationGlobal = new Presentation();
 
