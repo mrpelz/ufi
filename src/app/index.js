@@ -7,6 +7,16 @@ const { ImageLayer, ModuleLayer } = require('../lib/layer');
 const { Presentation } = require('../lib/presentation');
 
 
+const latch = () => {
+  let state = false;
+
+  return () => {
+    state = !state;
+    return state;
+  };
+};
+
+
 const server = new DisplayServer({ port: 1337 });
 server.listen();
 
@@ -29,6 +39,7 @@ server.addDisplay(displayEsszimmer);
 const displayWohnzimmer = new Display('wohnzimmer');
 server.addDisplay(displayWohnzimmer);
 
+
 const ringTimeLayer = new ModuleLayer(
   new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/ring-time/index.js', {
     type: 'modulepreload'
@@ -48,6 +59,34 @@ ringTimeLayer.setState({
     toRow: 12
   }
 });
+
+const mobaTimeLayer = new ModuleLayer(
+  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/moba-time/index.js', {
+    type: 'modulepreload'
+  }),
+  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/utils/easing.js', {
+    type: 'modulepreload'
+  }),
+  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/moba-time/index.css', {
+    type: 'style'
+  })
+);
+mobaTimeLayer.setState({
+  layout: {
+    fromColumn: 1,
+    toColumn: 12,
+    fromRow: 1,
+    toRow: 12
+  }
+});
+
+const presentationTime = new Presentation();
+presentationTime.preloadLayer(ringTimeLayer);
+presentationTime.preloadLayer(mobaTimeLayer);
+presentationTime.setLayers([
+  mobaTimeLayer
+]);
+
 
 const presentationGlobal = new Presentation();
 
@@ -81,7 +120,9 @@ triggerServer.listen(1338);
 
 
 const presentationImages = new Presentation();
+
 const preloadedImages = /** @type {Map<String, import('../lib/layer').AnyLayer>} */ (new Map());
+const clock = latch();
 
 /**
  * @param {import('http').IncomingMessage} request
@@ -160,6 +201,9 @@ const handleImageDisplay = (url) => {
 
   if (!imageLayer) return;
 
+  presentationTime.setLayers([
+    clock() ? ringTimeLayer : mobaTimeLayer
+  ]);
   presentationImages.setLayers([imageLayer]);
 };
 
@@ -195,7 +239,7 @@ const handleResponse = (request, response) => {
   switch (request.url) {
     case '/on':
       presentationGlobal.setLayers([
-        ringTimeLayer,
+        presentationTime,
         presentationImages
       ]);
       break;
