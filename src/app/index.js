@@ -240,7 +240,7 @@ const handleResponse = (request, response) => {
     case '/on':
       presentationGlobal.setLayers([
         presentationTime,
-        // presentationImages
+        presentationImages
       ]);
       break;
     case '/off':
@@ -250,7 +250,7 @@ const handleResponse = (request, response) => {
       handlePostData(request, handleImagePreload);
       break;
     case '/image_display':
-      // handlePostData(request, handleImageDisplay);
+      handlePostData(request, handleImageDisplay);
       break;
     case '/image_unload':
       handlePostData(request, handleImageUnload);
