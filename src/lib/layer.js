@@ -14,8 +14,6 @@ const { deepMerge, structuredClone, uuid } = require('./utils');
  * | InstanceType<typeof layers.VideoLayer>}
 */
 
-const changeEvent = Symbol('change');
-
 const initialState = /** @type {LayerState} */ ({
   layout: {
     alignX: 'center',
@@ -48,7 +46,6 @@ class Layer extends EventEmitter {
    */
   setState(data) {
     deepMerge(this.state, data);
-    this.emit(changeEvent);
   }
 }
 
@@ -78,7 +75,4 @@ const layers = {
   VideoLayer: extendLayer(Symbol('video'))
 };
 
-module.exports = {
-  changeEvent,
-  ...layers
-};
+module.exports = layers;

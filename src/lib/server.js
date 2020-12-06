@@ -75,50 +75,9 @@ class DisplayServerDisplay {
     this.display = display;
     this.connection = /** @type {import('http').ServerResponse['write']|null} */ (null);
 
-    this.display.setChangeCallback(() => {
-      this._publishMessage(this._data, 'update');
-    });
-
     setInterval(() => {
       this._publishMessage(null, 'keepalive');
     }, 10000);
-  }
-
-  get _data() {
-    const presentations = this.display.presentations;
-
-    const presented = getPresentedLayers(presentations);
-    const preloaded = getPreloadedLayers(presentations);
-
-    const assets = /** @type {Set<I_Asset>} */ (new Set());
-
-    presented.forEach(
-      ({ assets: layerAssets }) => layerAssets.forEach(
-        (layerAsset) => assets.add(layerAsset)
-      )
-    );
-
-    preloaded.forEach(
-      ({ assets: layerAssets }) => layerAssets.forEach(
-        (layerAsset) => assets.add(layerAsset)
-      )
-    );
-
-    return {
-      assets: [...assets].map((asset) => ({
-        hash: asset.hash,
-        id: asset.id,
-        MIMEType: asset.MIMEType,
-        type: asset.type,
-        url: asset.url.toString()
-      })),
-      layers: [...presented].map((layer) => ({
-        assets: [...layer.assets].map((asset) => asset.id),
-        id: layer.id,
-        state: layer.state,
-        type: layer.type.description
-      }))
-    };
   }
 
   get id() {
@@ -157,6 +116,45 @@ class DisplayServerDisplay {
     return true;
   }
 
+  commit() {
+    const presentations = this.display.presentations;
+
+    const presented = getPresentedLayers(presentations);
+    const preloaded = getPreloadedLayers(presentations);
+
+    const assets = /** @type {Set<I_Asset>} */ (new Set());
+
+    presented.forEach(
+      ({ assets: layerAssets }) => layerAssets.forEach(
+        (layerAsset) => assets.add(layerAsset)
+      )
+    );
+
+    preloaded.forEach(
+      ({ assets: layerAssets }) => layerAssets.forEach(
+        (layerAsset) => assets.add(layerAsset)
+      )
+    );
+
+    const data = {
+      assets: [...assets].map((asset) => ({
+        hash: asset.hash,
+        id: asset.id,
+        MIMEType: asset.MIMEType,
+        type: asset.type,
+        url: asset.url.toString()
+      })),
+      layers: [...presented].map((layer) => ({
+        assets: [...layer.assets].map((asset) => asset.id),
+        id: layer.id,
+        state: layer.state,
+        type: layer.type.description
+      }))
+    };
+
+    this._publishMessage(data, 'update');
+  }
+
   /**
    * @param {import('http').ServerResponse['write']} writer
    */
@@ -164,12 +162,11 @@ class DisplayServerDisplay {
     if (this.connection) return;
     this.connection = writer;
 
-    this.display.onChange();
+    this.commit();
   }
 
   destroy() {
     this.disconnect();
-    this.display.removeChangeCallback();
   }
 
   disconnect() {
@@ -294,6 +291,12 @@ class DisplayServer {
   close() {
     const { server } = this._state;
     server.close();
+  }
+
+  commit() {
+    this._state.displays.forEach((displayServerDisplay) => {
+      displayServerDisplay.commit();
+    });
   }
 
   listen() {

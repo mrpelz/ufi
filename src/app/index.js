@@ -235,30 +235,48 @@ const handleImageUnload = (url) => {
  * @param {import('http').ServerResponse} response
  */
 const handleResponse = (request, response) => {
-  // eslint-disable-next-line default-case
+  const finish = () => {
+    server.commit();
+
+    response.writeHead(200);
+    response.end();
+  };
+
   switch (request.url) {
     case '/on':
       presentationGlobal.setLayers([
         presentationTime,
         presentationImages
       ]);
+
+      finish();
       break;
     case '/off':
       presentationGlobal.setLayers([]);
+
+      finish();
       break;
     case '/image_preload':
-      handlePostData(request, handleImagePreload);
+      handlePostData(request, (url) => {
+        handleImagePreload(url);
+        finish();
+      });
       break;
     case '/image_display':
-      handlePostData(request, handleImageDisplay);
+      handlePostData(request, (url) => {
+        handleImageDisplay(url);
+        finish();
+      });
       break;
     case '/image_unload':
-      handlePostData(request, handleImageUnload);
+      handlePostData(request, (url) => {
+        handleImageUnload(url);
+        finish();
+      });
       break;
+    default:
+      finish();
   }
-
-  response.writeHead(200);
-  response.end();
 };
 
 triggerServer.on('request', handleResponse);
