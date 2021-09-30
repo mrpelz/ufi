@@ -41,13 +41,13 @@ server.addDisplay(displayWohnzimmer);
 
 
 const ringTimeLayer = new ModuleLayer(
-  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/ring-time/index.js', {
+  new Asset('/ufi-static/ring-time/index.js', {
     type: 'modulepreload'
   }),
-  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/utils/time.js', {
+  new Asset('/ufi-static/utils/time.js', {
     type: 'modulepreload'
   }),
-  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/ring-time/index.css', {
+  new Asset('/ufi-static/ring-time/index.css', {
     type: 'style'
   })
 );
@@ -61,13 +61,13 @@ ringTimeLayer.setState({
 });
 
 const mobaTimeLayer = new ModuleLayer(
-  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/moba-time/index.js', {
+  new Asset('/ufi-static/moba-time/index.js', {
     type: 'modulepreload'
   }),
-  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/utils/easing.js', {
+  new Asset('/ufi-static/utils/easing.js', {
     type: 'modulepreload'
   }),
-  new Asset('http://ufi.mom.net.wurstsalat.cloud/ufi-static/moba-time/index.css', {
+  new Asset('/ufi-static/moba-time/index.css', {
     type: 'style'
   })
 );
