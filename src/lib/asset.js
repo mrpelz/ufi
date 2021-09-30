@@ -6,7 +6,7 @@ const { uuid } = require('./utils');
 class Asset {
 
   /**
-   * @param {string|URL} url
+   * @param {string} url
    * @param {{
    *  type?: PreloadType,
    *  MIMEType?: PreloadMIMEType,
@@ -23,7 +23,7 @@ class Asset {
     this.id = uuid();
     this.hash = hash;
     this.MIMEType = MIMEType;
-    this.url = url instanceof URL ? url : new URL(url);
+    this.url = url;
     this.type = type;
   }
 }

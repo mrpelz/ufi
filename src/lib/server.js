@@ -142,7 +142,7 @@ class DisplayServerDisplay {
         id: asset.id,
         MIMEType: asset.MIMEType,
         type: asset.type,
-        url: asset.url.toString()
+        url: asset.url
       })),
       layers: [...presented].map((layer) => ({
         assets: [...layer.assets].map((asset) => asset.id),
