@@ -263,7 +263,7 @@
         ],
         "operator-linebreak": [
             "error",
-            "before"
+            "after"
         ],
         "padded-blocks": "off",
         "padding-line-between-statements": "error",

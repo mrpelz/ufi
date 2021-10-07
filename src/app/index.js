@@ -6,20 +6,23 @@ const { DisplayServer } = require('../lib/server');
 const { ImageLayer, ModuleLayer } = require('../lib/layer');
 const { Presentation } = require('../lib/presentation');
 
+const latch = (maxIndex = 1) => {
+  const initialIndex = 0;
 
-const latch = () => {
-  let state = false;
+  let index = initialIndex;
 
   return () => {
-    state = !state;
-    return state;
+    const thisIndex = index;
+
+    const nextIndex = index + 1;
+    index = nextIndex > maxIndex ? initialIndex : nextIndex;
+
+    return thisIndex;
   };
 };
 
-
 const server = new DisplayServer({ port: 1337 });
 server.listen();
-
 
 const displayTest = new Display('test');
 server.addDisplay(displayTest);
@@ -39,16 +42,15 @@ server.addDisplay(displayEsszimmer);
 const displayWohnzimmer = new Display('wohnzimmer');
 server.addDisplay(displayWohnzimmer);
 
-
 const ringTimeLayer = new ModuleLayer(
   new Asset('/ufi-static/ring-time/index.js', {
-    type: 'modulepreload'
+    type: 'modulepreload',
   }),
   new Asset('/ufi-static/utils/time.js', {
-    type: 'modulepreload'
+    type: 'modulepreload',
   }),
   new Asset('/ufi-static/ring-time/index.css', {
-    type: 'style'
+    type: 'style',
   })
 );
 ringTimeLayer.setState({
@@ -56,73 +58,94 @@ ringTimeLayer.setState({
     fromColumn: 1,
     toColumn: 12,
     fromRow: 1,
-    toRow: 12
-  }
+    toRow: 12,
+  },
 });
 
-const mobaTimeLayer = new ModuleLayer(
+const mobaTimeAssets = [
   new Asset('/ufi-static/moba-time/index.js', {
-    type: 'modulepreload'
+    type: 'modulepreload',
   }),
   new Asset('/ufi-static/utils/easing.js', {
-    type: 'modulepreload'
+    type: 'modulepreload',
   }),
   new Asset('/ufi-static/moba-time/index.css', {
-    type: 'style'
-  })
-);
-mobaTimeLayer.setState({
+    type: 'style',
+  }),
+];
+
+const mobaTimeLayerModern = new ModuleLayer(...mobaTimeAssets);
+mobaTimeLayerModern.setState({
+  data: {
+    style: {
+      borderColor: '#3b3a3c',
+      faceColor: '#f2f2f7',
+      fillColor: 'transparent',
+      hoursHandColor: '#f2f2f7',
+      labelColor: '#f2f2f7',
+      minutesHandColor: '#f2f2f7',
+    },
+  },
   layout: {
     fromColumn: 1,
     toColumn: 12,
     fromRow: 1,
-    toRow: 12
-  }
+    toRow: 12,
+  },
+});
+
+const mobaTimeLayerClassic = new ModuleLayer(...mobaTimeAssets);
+mobaTimeLayerClassic.setState({
+  data: {
+    config: {
+      design: 'classic',
+    },
+    style: {
+      faceColor: '#f2f2f7',
+      fillColor: 'transparent',
+      hoursHandColor: '#f2f2f7',
+      labelColor: '#f2f2f7',
+      minutesHandColor: '#f2f2f7',
+    },
+  },
+  layout: {
+    fromColumn: 1,
+    toColumn: 12,
+    fromRow: 1,
+    toRow: 12,
+  },
 });
 
 const presentationTime = new Presentation();
 presentationTime.preloadLayer(ringTimeLayer);
-presentationTime.preloadLayer(mobaTimeLayer);
-presentationTime.setLayers([
-  mobaTimeLayer
-]);
-
+presentationTime.preloadLayer(mobaTimeLayerModern);
+presentationTime.preloadLayer(mobaTimeLayerClassic);
+presentationTime.setLayers([mobaTimeLayerModern]);
 
 const presentationGlobal = new Presentation();
 
-displayTest.setPresentations([
-  presentationGlobal
-]);
+displayTest.setPresentations([presentationGlobal]);
 
-displayArbeitszimmer.setPresentations([
-  presentationGlobal
-]);
+displayArbeitszimmer.setPresentations([presentationGlobal]);
 
-displaySchlafzimmer.setPresentations([
-  presentationGlobal
-]);
+displaySchlafzimmer.setPresentations([presentationGlobal]);
 
-displayKueche.setPresentations([
-  presentationGlobal
-]);
+displayKueche.setPresentations([presentationGlobal]);
 
-displayEsszimmer.setPresentations([
-  presentationGlobal
-]);
+displayEsszimmer.setPresentations([presentationGlobal]);
 
-displayWohnzimmer.setPresentations([
-  presentationGlobal
-]);
-
+displayWohnzimmer.setPresentations([presentationGlobal]);
 
 const triggerServer = new Server();
 triggerServer.listen(1338);
 
-
 const presentationImages = new Presentation();
 
-const preloadedImages = /** @type {Map<String, import('../lib/layer').AnyLayer>} */ (new Map());
-const clock = latch();
+const preloadedImages =
+  /** @type {Map<String, import('../lib/layer').AnyLayer>} */ (new Map());
+
+const clock = latch(2);
+const clocks = [ringTimeLayer, mobaTimeLayerModern, mobaTimeLayerClassic];
 
 /**
  * @param {import('http').IncomingMessage} request
@@ -152,7 +175,7 @@ const createImageLayer = (url) => {
   if (url) {
     try {
       asset = new Asset(url, {
-        type: 'image'
+        type: 'image',
       });
     } catch (_) {
       // noop
@@ -168,8 +191,8 @@ const createImageLayer = (url) => {
       toColumn: 12,
       fromRow: 1,
       toRow: 12,
-      backgroundColor: 'black'
-    }
+      backgroundColor: 'black',
+    },
   });
 
   return imageLayer;
@@ -201,9 +224,7 @@ const handleImageDisplay = (url) => {
 
   if (!imageLayer) return;
 
-  presentationTime.setLayers([
-    clock() ? ringTimeLayer : mobaTimeLayer
-  ]);
+  presentationTime.setLayers([clocks[clock()]]);
   presentationImages.setLayers([imageLayer]);
 };
 
@@ -229,7 +250,6 @@ const handleImageUnload = (url) => {
   }
 };
 
-
 /**
  * @param {import('http').IncomingMessage} request
  * @param {import('http').ServerResponse} response
@@ -244,10 +264,7 @@ const handleResponse = (request, response) => {
 
   switch (request.url) {
     case '/on':
-      presentationGlobal.setLayers([
-        presentationTime,
-        presentationImages
-      ]);
+      presentationGlobal.setLayers([presentationTime, presentationImages]);
 
       finish();
       break;
