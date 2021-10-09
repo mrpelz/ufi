@@ -42,6 +42,9 @@ server.addDisplay(displayEsszimmer);
 const displayWohnzimmer = new Display('wohnzimmer');
 server.addDisplay(displayWohnzimmer);
 
+const displayFlur = new Display('flur');
+server.addDisplay(displayFlur);
+
 const ringTimeLayer = new ModuleLayer(
   new Asset('/ufi-static/ring-time/index.js', {
     type: 'modulepreload',
@@ -135,6 +138,8 @@ displayKueche.setPresentations([presentationGlobal]);
 displayEsszimmer.setPresentations([presentationGlobal]);
 
 displayWohnzimmer.setPresentations([presentationGlobal]);
+
+displayFlur.setPresentations([presentationGlobal]);
 
 const triggerServer = new Server();
 triggerServer.listen(1338);
